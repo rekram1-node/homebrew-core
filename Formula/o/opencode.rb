@@ -1,33 +1,28 @@
 class Opencode < Formula
   desc "AI coding agent, built for the terminal"
   homepage "https://opencode.ai"
-  url "https://registry.npmjs.org/opencode-ai/-/opencode-ai-1.0.107.tgz"
-  sha256 "590e4ad65b21b94db31fb091477554e199ca9195cd15b8597dd2f5dcbd8b0eca"
+  version "1.0.107"
   license "MIT"
 
-  bottle do
-    sha256                               arm64_tahoe:   "fcd32395f8f535698ba57937b2e33e6d41607c7aacfb124a96f7700e5320722c"
-    sha256                               arm64_sequoia: "fcd32395f8f535698ba57937b2e33e6d41607c7aacfb124a96f7700e5320722c"
-    sha256                               arm64_sonoma:  "fcd32395f8f535698ba57937b2e33e6d41607c7aacfb124a96f7700e5320722c"
-    sha256 cellar: :any_skip_relocation, sonoma:        "0270b3a6e696ca3a3c7a81f2df911ceaf29b6a09fe6bbf42b590a3c8dd77f958"
-    sha256 cellar: :any_skip_relocation, arm64_linux:   "33a8a1b22fe72151f531422f336b74def88840bf6dac22aaa74f48a5b91d9b45"
-    sha256 cellar: :any_skip_relocation, x86_64_linux:  "f236a77bfc297962c7d60245e315a689abc54d23ba5e225a23da35712987629e"
+  on_macos do
+    arch arm64: "arm64", intel: "x64"
+
+    url "https://github.com/sst/opencode/releases/download/v#{version}/opencode-darwin-#{arch}.zip"
+    sha256 arm64: "f0f45548537529e93344e884837779cb631a683ebe2507d774e9bd9e11fbf6a3",
+           intel: "bfd697116a59f73ecda795509b24b91eef36102a36db1464cebd62c0b112d794"
   end
 
-  depends_on "node"
+  on_linux do
+    arch arm64: "arm64", intel: "x64"
+
+    url "https://github.com/sst/opencode/releases/download/v#{version}/opencode-linux-#{arch}.tar.gz"
+    sha256 arm64: "b052bc23a2b209b49ef5ff021d84587cdb7bdafc4718133d3d13635fc490c337",
+           intel: "d8ac0d8b963e2f9e6e1142079b174a232741676d6492f86109c08700a825450d"
+  end
 
   def install
-    system "npm", "install", *std_npm_args
-    bin.install_symlink Dir["#{libexec}/bin/*"]
-
-    # Remove binaries for other architectures, `-musl`, `-baseline`, and `-baseline-musl`
-    arch = Hardware::CPU.arm? ? "arm64" : "x64"
-    os = OS.linux? ? "linux" : "darwin"
-    (libexec/"lib/node_modules/opencode-ai/node_modules").children.each do |d|
-      next unless d.directory?
-
-      rm_r d if d.basename.to_s != "opencode-#{os}-#{arch}"
-    end
+    chmod "+x", "opencode"
+    bin.install "opencode"
   end
 
   test do
